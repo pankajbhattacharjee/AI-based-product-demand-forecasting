@@ -1,0 +1,16 @@
+for (let i = 0; i < forecastPeriod; i++) {
+        const date = addDays(today, i * 7);
+        forecast.push({
+            date: format(date, 'yyyy-MM-dd'),
+            forecast: getRandomInt(200, 600)
+        });
+    }
+=======
+    // Generate forecast data for the next forecastPeriod days
+    for (let i = 0; i < forecastPeriod; i++) {
+        const date = addDays(today, i);
+        forecast.push({
+            date: format(date, 'yyyy-MM-dd'),
+            forecast: getRandomInt(200, 600)
+        });
+    }

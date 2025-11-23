@@ -7,7 +7,7 @@ function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export const generateMockData = (products: Product[]): { sales: SaleRecord[], forecast: ForecastRecord[] } => {
+export const generateMockData = (products: Product[], forecastPeriod: number = 6): { sales: SaleRecord[], forecast: ForecastRecord[] } => {
     const sales: SaleRecord[] = [];
     const forecast: ForecastRecord[] = [];
     const today = new Date();
@@ -23,8 +23,8 @@ export const generateMockData = (products: Product[]): { sales: SaleRecord[], fo
         });
     }
 
-    // Generate forecast data for the next 6 weeks
-    for (let i = 0; i < 6; i++) {
+    // Generate forecast data for the next forecastPeriod weeks
+    for (let i = 0; i < forecastPeriod; i++) {
         const date = addDays(today, i * 7);
         forecast.push({
             date: format(date, 'yyyy-MM-dd'),

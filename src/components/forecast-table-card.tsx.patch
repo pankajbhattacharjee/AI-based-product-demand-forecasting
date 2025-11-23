@@ -1,0 +1,70 @@
+forecastData: ForecastRecord[];
+}
+=======
+type ForecastTableCardProps = {
+    forecastData: ForecastRecord[];
+    forecastPeriod: number;
+}
+```
+
+```
+<<<<<<< SEARCH
+export function ForecastTableCard({ forecastData }: ForecastTableCardProps) {
+=======
+export function ForecastTableCard({ forecastData, forecastPeriod }: ForecastTableCardProps) {
+```
+
+```
+<<<<<<< SEARCH
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center">
+        <div className="grid gap-2">
+          <CardTitle>Predicted Sales</CardTitle>
+          <CardDescription>
+            The next 30 days of forecasted sales data.
+          </CardDescription>
+        </div>
+        <Button size="sm" className="ml-auto gap-1" onClick={handleDownload}>
+          <Download className="h-4 w-4" />
+          Download CSV
+        </Button>
+      </CardHeader>
+=======
+  const dayLabel = forecastPeriod === 1 ? 'day' : 'days';
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center">
+        <div className="grid gap-2">
+          <CardTitle>Predicted Sales</CardTitle>
+          <CardDescription>
+            The next {forecastPeriod} {dayLabel} of forecasted sales data.
+          </CardDescription>
+        </div>
+        <Button size="sm" className="ml-auto gap-1" onClick={handleDownload}>
+          <Download className="h-4 w-4" />
+          Download CSV
+        </Button>
+      </CardHeader>
+```
+
+```
+<<<<<<< SEARCH
+      <CardFooter className='pt-4'>
+        <div className="text-sm text-muted-foreground">
+            Total next 30-day predicted sales: <span className="font-bold">{totalForecastedVolume.toLocaleString()} units</span>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
+=======
+      <CardFooter className='pt-4'>
+        <div className="text-sm text-muted-foreground">
+            Total next {forecastPeriod}-day predicted sales: <span className="font-bold">{totalForecastedVolume.toLocaleString()} units</span>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}

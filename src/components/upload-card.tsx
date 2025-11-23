@@ -1,121 +1,61 @@
-'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { FileUp } from 'lucide-react';
-import { useRef, useState, ChangeEvent, DragEvent } from 'react';
-import { Label } from './ui/label';
-import { useToast } from '@/hooks/use-toast';
+import React from "react";
+import { Card, CardHeader } from "./ui/card";
+import { useToast } from "../hooks/use-toast";
 
-type UploadCardProps = {
-    onDataSubmit: () => void;
+interface UploadCardProps {
+  onDataSubmit?: () => void;
 }
 
-export function UploadCard({ onDataSubmit }: UploadCardProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const handleFileClick = () => {
-    fileInputRef.current?.click();
+const UploadCard: React.FC<UploadCardProps> = ({ onDataSubmit }) => {
+  // Helper to parse CSV and get last date
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    // Simple CSV parsing: assumes first row is header, one column is 'date' or similar
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return;
+    const header = lines[0].split(',');
+    // Find date column index
+    const dateIdx = header.findIndex(h => h.toLowerCase().includes('date'));
+    if (dateIdx === -1) return;
+    // Get last row's date
+    const lastRow = lines[lines.length - 1].split(',');
+    const lastDateStr = lastRow[dateIdx];
+    // Parse date and get next day
+    const lastDate = new Date(lastDateStr);
+    if (isNaN(lastDate.getTime())) return;
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(lastDate.getDate() + 1);
+    // Trigger prediction (replace with your prediction logic)
+    alert(`Start prediction for next date: ${nextDate.toISOString().slice(0,10)}`);
   };
-
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log('Selected file:', file.name);
-      setFileName(file.name);
-    }
-  };
-
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const file = event.dataTransfer.files?.[0];
-    if (file) {
-      console.log('Dropped file:', file.name);
-      setFileName(file.name);
-    }
-  };
-  
-  const handleSubmit = () => {
-    if (!fileName) {
-        toast({
-            variant: "destructive",
-            title: "No file selected",
-            description: "Please upload a sales data file.",
-        });
-        return;
-    }
-    
-    onDataSubmit();
-
-    toast({
-        title: "Data Submitted",
-        description: `${fileName} has been submitted for processing. The dashboard will update with new data.`,
-    });
-  }
 
   return (
     <Card className="relative">
       <CardHeader>
-        <CardTitle>Data Input</CardTitle>
-        <CardDescription>
-          Upload sales data and provide external factors.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4">
-          <div>
-            <Label htmlFor="sales-data" className="mb-2 block">
-              Historical Sales Data (CSV)
-            </Label>
-            <div
-              id="sales-data"
-              className="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-8 text-center text-sm text-muted-foreground"
-              onClick={handleFileClick}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              {fileName ? (
-                <span>{fileName}</span>
-              ) : (
-                <span>Drag and drop CSV or click to browse.</span>
-              )}
-            </div>
+        <div>
+          <h2 className="text-2xl font-bold mb-1">Data Input</h2>
+          <p className="text-muted-foreground mb-4">Upload sales data and provide external factors.</p>
+          <label className="font-semibold mb-2 block">Historical Sales Data (CSV)</label>
+          <div
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
+            onClick={() => document.getElementById('csv-upload')?.click()}
+          >
             <input
+              id="csv-upload"
               type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
               accept=".csv"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
             />
+            <span className="text-muted-foreground">Drag and drop CSV or click to browse.</span>
           </div>
-          <div>
-            <Label htmlFor="external-factors">
-              External Factors (Holidays, Promotions)
-            </Label>
-            <Textarea
-              id="external-factors"
-              placeholder="e.g.&#10;Winter season +35% demand&#10;Diwali festival +25% demand"
-              className="mt-2"
-            />
-          </div>
-          <Button onClick={handleSubmit}>Submit Data</Button>
         </div>
-      </CardContent>
+      </CardHeader>
     </Card>
   );
-}
+};
+
+export default UploadCard;

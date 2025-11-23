@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { StatCard } from '@/components/stat-card';
 import { SalesChart } from '@/components/sales-chart';
 import { SettingsCard } from '@/components/settings-card';
-import { UploadCard } from '@/components/upload-card';
+import UploadCard from '@/components/upload-card';
 import {
   TrendingUp,
   Package,
@@ -68,18 +68,19 @@ const initialSalesData: SaleRecord[] = [
 ];
 
 const initialForecastData: ForecastRecord[] = [
-    { date: '2024-06-03', forecast: 420 },
-    { date: '2024-06-10', forecast: 430 },
-    { date: '2024-06-17', forecast: 425 },
-    { date: '2024-06-24', forecast: 440 },
-    { date: '2024-07-01', forecast: 450 },
-    { date: '2024-07-08', forecast: 460 },
-  ];
+  { date: '2024-06-03', forecast: 420 },
+  { date: '2024-06-10', forecast: 430 },
+  { date: '2024-06-17', forecast: 425 },
+  { date: '2024-06-24', forecast: 440 },
+  { date: '2024-07-01', forecast: 450 },
+  { date: '2024-07-08', forecast: 460 },
+];
 
 export function Dashboard() {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [salesData, setSalesData] = useState<SaleRecord[]>(initialSalesData);
   const [forecastData, setForecastData] = useState<ForecastRecord[]>(initialForecastData);
+  const [forecastPeriod, setForecastPeriod] = useState<number>(30);
 
   const handleAddProduct = (newProduct: Omit<Product, 'id'>) => {
     setProducts((prevProducts) => [
@@ -101,45 +102,44 @@ export function Dashboard() {
     setProducts((prevProducts) => prevProducts.filter((p) => p.id !== productId));
   };
 
-  const handleDataSubmit = () => {
-    // In a real app, you'd parse the uploaded CSV here and re-train the model.
-    // For now, we'll just generate new mock data to simulate an update.
-    const { sales, forecast } = generateMockData(products);
+  const handleDataSubmit = (newForecastPeriod?: number) => {
+    const period = newForecastPeriod ?? forecastPeriod;
+    const { sales, forecast } = generateMockData(products, period);
     setSalesData(sales);
     setForecastData(forecast);
+    setForecastPeriod(period);
   };
 
   const dashboardStats = useMemo(() => {
     const totalSalesValue = salesData.reduce((acc, sale) => {
-      const product = products.find(p => p.id === sale.productId);
+      const product = products.find((p) => p.id === sale.productId);
       return acc + (product ? product.price * sale.sales : 0);
     }, 0);
-    
+
     const totalUnitsSold = salesData.reduce((acc, sale) => acc + sale.sales, 0);
-    
+
     const totalInventory = products.reduce((acc, product) => acc + product.inventory, 0);
 
     const salesByCategory = products.reduce((acc, product) => {
-        const productSales = salesData
-            .filter(sale => sale.productId === product.id)
-            .reduce((sum, sale) => sum + sale.sales * product.price, 0);
+      const productSales = salesData
+        .filter((sale) => sale.productId === product.id)
+        .reduce((sum, sale) => sum + sale.sales * product.price, 0);
 
-        if (!acc[product.category]) {
-            acc[product.category] = { name: product.category, value: 0 };
-        }
-        acc[product.category].value += productSales;
+      if (!acc[product.category]) {
+        acc[product.category] = { name: product.category, value: 0 };
+      }
+      acc[product.category].value += productSales;
 
-        return acc;
+      return acc;
     }, {} as { [key: string]: SalesByCategory });
 
     return {
-        totalSalesValue,
-        totalUnitsSold,
-        totalInventory,
-        salesByCategory: Object.values(salesByCategory),
-    }
+      totalSalesValue,
+      totalUnitsSold,
+      totalInventory,
+      salesByCategory: Object.values(salesByCategory),
+    };
   }, [salesData, products]);
-
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -149,7 +149,10 @@ export function Dashboard() {
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
               <StatCard
                 title="Total Sales"
-                value={`$${dashboardStats.totalSalesValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                value={`$${dashboardStats.totalSalesValue.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
                 change="+12.5%"
                 Icon={TrendingUp}
                 changeColor="text-green-500"
@@ -168,26 +171,21 @@ export function Dashboard() {
                 Icon={Package}
                 changeColor="text-red-500"
               />
-              <StatCard
-                title="New Optimizations"
-                value="3"
-                change=""
-                Icon={Lightbulb}
-              />
+              <StatCard title="New Optimizations" value="3" change="" Icon={Lightbulb} />
             </div>
             <SalesChart salesData={salesData} forecastData={forecastData} />
-            <ForecastTableCard forecastData={forecastData} />
-            <ProductManagementCard 
-              products={products} 
+            <ForecastTableCard forecastData={forecastData} forecastPeriod={forecastPeriod} />
+            <ProductManagementCard
+              products={products}
               onAddProduct={handleAddProduct}
               onUpdateProduct={handleUpdateProduct}
               onDeleteProduct={handleDeleteProduct}
             />
           </div>
-  
+
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
             <UploadCard onDataSubmit={handleDataSubmit} />
-            <SettingsCard products={products} onSaveSettings={handleDataSubmit}/>
+            <SettingsCard products={products} onSaveSettings={handleDataSubmit} />
             <AlertsCard />
             <ChartCard data={dashboardStats.salesByCategory} />
           </div>

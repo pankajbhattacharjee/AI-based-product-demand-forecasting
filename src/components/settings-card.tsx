@@ -1,29 +1,22 @@
-'use client';
+import React, { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { Label } from './ui/label';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select';
+import { useToast } from '../hooks/use-toast';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import type { Product } from '@/lib/types';
+type Product = {
+  name: string;
+  // Add other fields as necessary
+};
 
+import { Textarea } from './ui/textarea';
+
+// Added forecastPeriod and externalFactors parameters in onSaveSettings
 type SettingsCardProps = {
   products: Product[];
-  onSaveSettings: () => void;
+  onSaveSettings: (forecastPeriod: number, externalFactors: string) => void;
 };
 
 export function SettingsCard({ products, onSaveSettings }: SettingsCardProps) {
@@ -33,13 +26,14 @@ export function SettingsCard({ products, onSaveSettings }: SettingsCardProps) {
   );
   const [learningRate, setLearningRate] = useState(0.01);
   const [epochs, setEpochs] = useState(100);
+  const [forecastPeriod, setForecastPeriod] = useState(30);
+  const [externalFactors, setExternalFactors] = useState('');
 
   const { toast } = useToast();
 
   const handleSaveSettings = () => {
-    // Here you would typically trigger the model re-training and forecasting
-    // For now, we'll call the onSaveSettings prop which simulates a data update
-    onSaveSettings();
+    // Propagate the new forecastPeriod and externalFactors on save
+    onSaveSettings(forecastPeriod, externalFactors);
 
     toast({
       title: 'Settings Saved',
@@ -60,11 +54,27 @@ export function SettingsCard({ products, onSaveSettings }: SettingsCardProps) {
           <div className="grid gap-2">
             <Label htmlFor="product">Product</Label>
             <Input
-                id="product"
-                value={selectedProduct}
-                onChange={(e) => setSelectedProduct(e.target.value)}
-                placeholder="Enter product name"
-              />
+              id="product"
+              value={selectedProduct}
+              onChange={(e) => setSelectedProduct(e.target.value)}
+              placeholder="Enter product name"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="forecast-period">Forecast Period</Label>
+            <Select
+              value={forecastPeriod.toString()}
+              onValueChange={(value) => setForecastPeriod(parseInt(value, 10))}
+            >
+              <SelectTrigger id="forecast-period">
+                <SelectValue placeholder="Select forecast period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">30 Days</SelectItem>
+                <SelectItem value="90">90 Days</SelectItem>
+                <SelectItem value="365">365 Days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="model">Forecasting Model</Label>
@@ -102,7 +112,19 @@ export function SettingsCard({ products, onSaveSettings }: SettingsCardProps) {
               step="1"
             />
           </div>
-          <Button type="button" onClick={handleSaveSettings}>Save Settings</Button>
+          <div className="grid gap-2">
+            <Label htmlFor="external-factors">External Factors (e.g. Holidays, Promotions)</Label>
+            <Textarea
+              id="external-factors"
+              value={externalFactors}
+              onChange={(e) => setExternalFactors(e.target.value)}
+              placeholder="e.g.&#10;Winter season +35% demand&#10;Diwali festival +25% demand"
+              rows={4}
+            />
+          </div>
+          <Button type="button" onClick={handleSaveSettings}>
+            Save Settings
+          </Button>
         </form>
       </CardContent>
     </Card>

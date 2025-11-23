@@ -23,9 +23,10 @@ import { cn } from '@/lib/utils';
 
 type ForecastTableCardProps = {
     forecastData: ForecastRecord[];
+    forecastPeriod: number;
 }
 
-export function ForecastTableCard({ forecastData }: ForecastTableCardProps) {
+export function ForecastTableCard({ forecastData, forecastPeriod }: ForecastTableCardProps) {
   const handleDownload = () => {
     const headers = ['date', 'forecast'];
     const csvRows = [
@@ -49,13 +50,15 @@ export function ForecastTableCard({ forecastData }: ForecastTableCardProps) {
   
   const totalForecastedVolume = forecastData.reduce((sum, item) => sum + item.forecast, 0);
 
+  const dayLabel = forecastPeriod === 1 ? 'day' : 'days';
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center">
         <div className="grid gap-2">
           <CardTitle>Predicted Sales</CardTitle>
           <CardDescription>
-            The next 30 days of forecasted sales data.
+            The next {forecastPeriod} {dayLabel} of forecasted sales data.
           </CardDescription>
         </div>
         <Button size="sm" className="ml-auto gap-1" onClick={handleDownload}>
@@ -97,7 +100,7 @@ export function ForecastTableCard({ forecastData }: ForecastTableCardProps) {
       </CardContent>
       <CardFooter className='pt-4'>
         <div className="text-sm text-muted-foreground">
-            Total next 30-day predicted sales: <span className="font-bold">{totalForecastedVolume.toLocaleString()} units</span>
+            Total next {forecastPeriod}-day predicted sales: <span className="font-bold">{totalForecastedVolume.toLocaleString()} units</span>
         </div>
       </CardFooter>
     </Card>
